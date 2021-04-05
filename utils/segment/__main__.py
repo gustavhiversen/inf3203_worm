@@ -145,7 +145,7 @@ class ThreadingHttpServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
             self.leader = True
 
     def ping_segments(self):
-        time.sleep(5)
+        time.sleep(10)
         for neighbour in self.neighbours:
             try:
                 URL = create_http_URL(neighbour['address'], "segment_info")
@@ -163,7 +163,6 @@ class ThreadingHttpServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
         
 
     def worm_get_info(self, URL):
-        # time.sleep(0.2)
         res = requests.get(url = URL+"info").json()
 
         try:
@@ -193,14 +192,11 @@ class ThreadingHttpServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
 
 
     def worm_post_segment(self, addr):
-        with open(sys.argv[0], 'rb') as file:
-            data = file.read()
-
         URL         = create_http_URL(addr)
         new_id      = self.find_new_id()
 
         response    = requests.post(URL+f'worm_entrance?args={new_id}-{self.max_segments}', data=data)
-        time.sleep(2)
+        time.sleep(0.3)
         
         new_segment_port    = str(gate_port + new_id)
         new_neighbour       = create_neighbour(addr.split(":")[0] +":"+ new_segment_port, new_id)
@@ -212,6 +208,10 @@ def run_http_server():
     global gate_port
     gate_port   = 50000
     gate_URL    = create_http_URL(f"{gate_name}:{gate_port}")
+
+    global data
+    with open(sys.argv[0], 'rb') as file:
+        data = file.read()
 
     args            = sys.argv[1].split("-")
     segment_id      = int(args[0])
